@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Background Remover</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>Background Remover</h1>
+    <div class="wrapper">
+        <div class="scroller" data-speed="fast">
+            <ul class="tag-list scroller__inner">
+                <li>Agung Hidayah Putra</li>
+                <li>Bhias Elang Ragenta</li>
+                <li>Ahmad Azka Al Husaini</li>
+                <li>Feri Irawan</li>
+                <li>Herlia Adella Salsabila</li>
+            </ul>
+        </div>
+    </div>
+    <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
+        <input type="file" name="file" id="fileInput">
+        <button type="submit">Upload & Remove Background</button>
+    </form>
+    <div id="resultContainer">
+        <img id="previewImage">
+    </div>
+
+    <script src="{{ url_for('static', filename='infinite-scroll.js') }}"></script>
+    <script>
+        document.getElementById('fileInput').addEventListener('change', function(event) {
+            var file = event.target.files[0];
+            if (file) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    var previewImage = document.getElementById('previewImage');
+                    previewImage.src = e.target.result;
+                    previewImage.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        document.getElementById('uploadForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            var formData = new FormData();
+            formData.append('file', document.getElementById('fileInput').files[0]);
+
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if ('error' in data) {
+                    alert(data.error);
+                } else if ('result' in data) {
+                    var previewImage = document.getElementById('previewImage');
+                    previewImage.src = `/result/${data.result.split('/').pop()}`;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    </script>    
+</body>
+</html>
